@@ -9,17 +9,22 @@ consumer_config= {
 
 consumer = Consumer(consumer_config)
 
-consumer.subscriber(['orders'])
+consumer.subscribe(['orders'])
 print("🟢 Consumer is running and subsribed to to orders")
 
-while True:
-    msg = consumer.poll(1.0) #polls: asks if there is a new event, the consumer is a pull archi, kafka isnt push archi
-    if msg is None:
-        continue
-    if msg.error():
-        print("🔴 Error: ", msg.error())
-        continue
-    
-    value = msg.value().decode('utf-8')
-    order = json.loads(value)
-    print(f"📦 Received Order: {order['item']} x {order['quantity']} from {order['user']}")
+try:
+    while True:
+        msg = consumer.poll(1.0) #polls: asks if there is a new event, the consumer is a pull archi, kafka isnt push archi
+        if msg is None:
+            continue
+        if msg.error():
+            print("🔴 Error: ", msg.error())
+            continue
+        
+        value = msg.value().decode('utf-8')
+        order = json.loads(value)
+        print(f"📦 Received Order: {order['item']} x {order['quantity']} from {order['user']}")
+except KeyboardInterrupt:
+    print("🔴 Closing consumer ")
+finally:
+    consumer.close()
